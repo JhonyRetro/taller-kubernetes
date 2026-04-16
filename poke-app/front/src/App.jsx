@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? "http://localhost:5180/api/v2";
-const AUTH_BASE_URL = import.meta.env.VITE_AUTH_BASE_URL ?? "http://localhost:5190";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? (import.meta.env.DEV ? "/api/v2" : "http://localhost:5180/api/v2");
+const AUTH_BASE_URL = import.meta.env.VITE_AUTH_BASE_URL ?? (import.meta.env.DEV ? "/auth" : "http://localhost:5190/auth");
 const PAGE_SIZE = 12;
 const TOKEN_STORAGE_KEY = "poke_auth_token";
 

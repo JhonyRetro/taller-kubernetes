@@ -137,13 +137,14 @@ public class PokeBackJavaApplication {
 
         private ResponseEntity<byte[]> buildProxyResponse(HttpResponse<byte[]> upstreamResponse) {
             var headers = new HttpHeaders();
-
-            upstreamResponse.headers().map().forEach((name, values) -> {
-                if (!HttpHeaders.TRANSFER_ENCODING.equalsIgnoreCase(name)
-                    && !HttpHeaders.CONTENT_LENGTH.equalsIgnoreCase(name)) {
-                    headers.put(name, values);
-                }
-            });
+            upstreamResponse.headers().firstValue(HttpHeaders.CONTENT_TYPE)
+                .ifPresent(contentType -> headers.set(HttpHeaders.CONTENT_TYPE, contentType));
+            upstreamResponse.headers().firstValue(HttpHeaders.CACHE_CONTROL)
+                .ifPresent(cacheControl -> headers.set(HttpHeaders.CACHE_CONTROL, cacheControl));
+            upstreamResponse.headers().firstValue(HttpHeaders.ETAG)
+                .ifPresent(etag -> headers.set(HttpHeaders.ETAG, etag));
+            upstreamResponse.headers().firstValue(HttpHeaders.LAST_MODIFIED)
+                .ifPresent(lastModified -> headers.set(HttpHeaders.LAST_MODIFIED, lastModified));
 
             return ResponseEntity.status(upstreamResponse.statusCode())
                 .headers(headers)
