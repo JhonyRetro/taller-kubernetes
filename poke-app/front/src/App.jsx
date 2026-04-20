@@ -319,9 +319,9 @@ function App() {
       <main className="auth-shell">
         <section className="auth-hero">
           <p className="eyebrow">Poke App</p>
-          <h1>Acceso protegido</h1>
+          <h1>Entrenador, tu clúster está listo.</h1>
           <p className="hero-copy">
-            Inicia sesión o crea una cuenta para acceder a la Pokédex local y consumir los servicios protegidos.
+            Inicia sesión o crea una cuenta para entrar en una Pokédex desplegada desde Kubernetes y servida por ArgoCD.
           </p>
         </section>
 
