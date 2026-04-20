@@ -15,7 +15,7 @@ spec:
     spec:
       containers:
         - name: front
-          image: poke-front:latest
+          image: poke-front:1.0.0
           imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 80
