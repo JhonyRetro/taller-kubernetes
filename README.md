@@ -156,6 +156,28 @@ Este script:
 - espera a que los `Deployment` queden listos,
 - muestra la IP del clúster y el host que debe añadirse localmente.
 
+### Construcción de imágenes versionadas para Minikube
+
+Si se quiere construir manualmente las imágenes con una versión concreta antes de desplegar, puede usarse:
+
+```bash
+./scripts/build-minikube-images.sh 1.1.0
+```
+
+Este script:
+
+- arranca Minikube si todavía no está levantado,
+- activa el addon de Ingress,
+- conecta Docker al daemon interno de Minikube,
+- construye las imágenes `poke-auth`, `poke-back` y `poke-front` con la versión indicada en el comando,
+- actualiza los archivos `deployment.yaml` para que usen esa misma versión en los campos `image`.
+
+Los `Deployment` que actualiza son:
+
+- `poke-app/k8s/auth/deployment.yaml`
+- `poke-app/k8s/back/deployment.yaml`
+- `poke-app/k8s/front/deployment.yaml`
+
 ### Aplicar cambios en una app ya desplegada
 
 Si se modifica `front`, `back` o `auth`, no es necesario rehacer todo el despliegue. Puede reconstruirse solo la imagen afectada y reiniciar el `Deployment` correspondiente:
@@ -199,3 +221,41 @@ Para hacer una limpieza más completa:
 ## Referencias adicionales
 
 - Guía específica de Kubernetes: [`poke-app/k8s/README.md`](./poke-app/k8s/README.md)
+
+## Carpeta `argocd`
+
+La carpeta [`argocd/`](./argocd) contiene los manifiestos necesarios para registrar este repositorio en Argo CD y desplegar la aplicación desde Git.
+
+### `argocd/upm.yaml`
+
+Este archivo define una `Application` de Argo CD:
+
+- crea la aplicación `upm`,
+- apunta al repositorio `git@github.com:PedroPabloDomenech-next/taller-kubernetes.git`,
+- indica que los manifiestos a desplegar están en `poke-app/k8s`,
+- despliega contra el clúster interno (`https://kubernetes.default.svc`) en el namespace `default`,
+- activa sincronización automática.
+
+### `argocd/repo-upm-secret.yaml`
+
+Este archivo define un `Secret` de tipo repositorio para Argo CD:
+
+- registra el repositorio Git que Argo CD debe poder leer,
+- usa autenticación SSH mediante `sshPrivateKey`,
+- debe existir en el namespace `argocd`,
+- incluye la etiqueta `argocd.argoproj.io/secret-type: repository`, que permite a Argo CD reconocerlo como credencial de repositorio.
+
+Este secreto es necesario cuando Argo CD debe acceder a un repositorio privado por SSH.
+
+### Orden recomendado de aplicación
+
+Primero debe aplicarse el secreto del repositorio y después la aplicación:
+
+```bash
+kubectl apply -f argocd/repo-upm-secret.yaml
+kubectl apply -f argocd/upm.yaml
+```
+
+### Nota de seguridad
+
+La clave privada SSH del archivo `argocd/repo-upm-secret.yaml` da acceso al repositorio configurado. Conviene gestionarla como credencial sensible y evitar reutilizarla fuera del entorno del taller.
